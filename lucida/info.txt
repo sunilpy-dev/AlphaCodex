@@ -1,0 +1,44 @@
+# Lucida Project Theme & Styling Context
+
+## 🎨 Color Palette
+- **Background (Dark):** `#05060f` (Deep obsidian blue/black)
+- **Primary Accent:** `#7c3aed` (Vibrant Purple)
+- **Secondary Accent:** `#a78bfa` (Light Lavender/Purple)
+- **Indigo Accent:** `#4f46e5` (Deep Indigo)
+- **Success/Green:** `#34d399`
+- **Warning/Yellow:** `#fbbf24`
+- **Error/Red:** `#f87171`
+- **Text Primary:** `#ffffff` (White)
+- **Text Secondary:** `rgba(255,255,255, 0.55)` (Muted white)
+- **Text Muted:** `rgba(255,255,255, 0.35)`
+- **Gradients:**
+  - **Primary Gradient:** `linear-gradient(135deg, #7c3aed, #4f46e5)`
+  - **Text Highlight:** `linear-gradient(90deg, #7c3aed 30%, #a78bfa 50%, #7c3aed 70%)`
+  - **Hero Glow:** `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,46,137,0.28) 0%, transparent 70%)`
+
+## ✨ UI Styling (Glassmorphism & Effects)
+- **Glass Panel:** `background: rgba(255,255,255, 0.045); backdrop-filter: blur(24px) saturate(1.5); border: 1px solid rgba(255,255,255, 0.1);`
+- **Glass Strong:** `background: rgba(255,255,255, 0.07); backdrop-filter: blur(36px) saturate(1.8); border: 1px solid rgba(255,255,255, 0.14);`
+- **Feature Cards:** Dark semi-transparent panels with 28px border-radius and 32px shadow. Hover effect includes `translateY(-10px)` and purple glow.
+- **Buttons:**
+  - **Primary:** Gradient background, 14px radius, `pulse-glow` animation.
+  - **Ghost:** Transparent with `1px solid rgba(255,255,255, 0.18)`.
+- **Orbs:** Large blurred background blobs (`#4c1d95`, `#1e1b4b`, `#5b21b6`) with `filter: blur(90px)` and low opacity (0.38).
+
+## 🎬 Animations & Keyframes
+- **floatY:** Vertical floating (`-18px`) for panels (5s infinite).
+- **fadeSlideUp:** Entrance animation with `translateY(36px)` and `blur(8px)` to clear (0.7s).
+- **pulse-glow:** Pulsing box-shadow for buttons (2.8s).
+- **shimmer:** Moving text gradient highlight (2.5s linear infinite).
+- **blur-reveal:** Scroll-triggered reveal transitioning from `blur(12px)` and `translateY(20px)` to clear.
+- **blink:** Standard cursor blink (1.1s).
+
+## Typography
+- **Font Family:** 'Inter', sans-serif (Google Fonts).
+- **Headings:** Bold/ExtraBold (700-800), `letter-spacing: -1.5px` for hero.
+- **Body:** `line-height: 1.75` to `1.85`, `letter-spacing: 0.2px`.
+
+## 🛠️ Technology Stack
+- **Framework:** React + Vite
+- **Styling:** Tailwind CSS v4 + Vanilla CSS (Global Styles & Inline)
+- **Icons:** Inline SVG / Emoji

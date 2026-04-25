@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import Workspace from "./components/workspace/Workspace";
 
 /* ─── Inline keyframes injected once ─── */
 const STYLES = `
@@ -330,8 +332,8 @@ function ReadingDemo() {
   );
 }
 
-/* ─── Main App ─── */
-export default function App() {
+/* ─── Landing Page Content ─── */
+function LandingPage({ onStart }) {
   const [scrolled, setScrolled] = useState(false);
   const cardsRef = useRef([]);
   const blurRefs = useRef([]);
@@ -375,7 +377,11 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <style>{STYLES}</style>
 
       {/* ── NAVBAR ── */}
@@ -406,6 +412,7 @@ export default function App() {
             <button className="btn-ghost">Features</button>
             <button className="btn-ghost">Pricing</button>
             <button
+              onClick={onStart}
               className="btn-primary"
               style={{ padding: "9px 22px", fontSize: 14, animation: "none",
                        boxShadow: "0 0 18px rgba(124,58,237,.4)" }}
@@ -514,7 +521,11 @@ export default function App() {
             </p>
 
             <div className="anim-fade3" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <button className="btn-primary" style={{ fontSize: 15, padding: "15px 38px" }}>
+              <button 
+                onClick={onStart}
+                className="btn-primary" 
+                style={{ fontSize: 15, padding: "15px 38px" }}
+              >
                 Start Reading — Free
               </button>
               <button className="btn-ghost" style={{ padding: "15px 28px", fontSize: 15 }}>
@@ -670,6 +681,21 @@ export default function App() {
         © 2025 Lucida · Built for every reader{" "}
         <span style={{ color: "#6d28d9" }}>✦</span>
       </footer>
-    </>
+    </motion.div>
+  );
+}
+
+/* ─── Main App ─── */
+export default function App() {
+  const [showWorkspace, setShowWorkspace] = useState(false);
+
+  return (
+    <AnimatePresence mode="wait">
+      {showWorkspace ? (
+        <Workspace key="workspace" />
+      ) : (
+        <LandingPage key="landing" onStart={() => setShowWorkspace(true)} />
+      )}
+    </AnimatePresence>
   );
 }
