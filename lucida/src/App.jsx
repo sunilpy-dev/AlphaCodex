@@ -808,7 +808,19 @@ function LandingPage({ onStart }) {
           © 2025 Lucida Accessibility. All rights reserved.
         </div>
       </footer>
-<<<<<<< Updated upstream
+      <style>{`
+        .mobile-stack {
+          transition: all 0.5s ease;
+        }
+        @media (max-width: 768px) {
+          .mobile-stack { grid-template-columns: 1fr !important; gap: 32px !important; text-align: center !important; }
+          .mobile-stack > div { margin: 0 auto; }
+        }
+        .feat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        @media (max-width: 900px) {
+          .feat-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </motion.div>
   );
 }
@@ -825,22 +837,5 @@ export default function App() {
         <LandingPage key="landing" onStart={() => setShowWorkspace(true)} />
       )}
     </AnimatePresence>
-=======
-
-      <style>{`
-        .mobile-stack {
-          transition: all 0.5s ease;
-        }
-        @media (max-width: 768px) {
-          .mobile-stack { grid-template-columns: 1fr !important; gap: 32px !important; text-align: center !important; }
-          .mobile-stack > div { margin: 0 auto; }
-        }
-        .feat-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        @media (max-width: 900px) {
-          .feat-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-    </>
->>>>>>> Stashed changes
   );
 }
