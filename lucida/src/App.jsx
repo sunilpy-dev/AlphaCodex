@@ -57,7 +57,7 @@ const STYLES = `
     letter-spacing: var(--letter-spacing, normal);
     line-height: var(--line-height, 1.5);
     font-family: var(--font-family, inherit);
-    transition: letter-spacing 0.8s ease-out, line-height 0.8s ease-out, font-family 0.8s ease-out;
+    transition: letter-spacing 0.4s ease-out, line-height 0.4s ease-out, font-family 0.4s ease-out;
   }
   
   .stacked-card {
@@ -107,7 +107,7 @@ function ScrollStory() {
       if (visibleIndexes.length > 0) {
         setStep(Math.max(...visibleIndexes));
       }
-    }, { rootMargin: "-20% 0px -40% 0px", threshold: 0.5 });
+    }, { rootMargin: "-10% 0px -25% 0px", threshold: 0.3 });
     stepsRefs.current.forEach(el => el && io.observe(el));
     return () => io.disconnect();
   }, []);
@@ -164,13 +164,13 @@ function ScrollStory() {
   let cumulativeWordCount = 0; 
 
   return (
-    <section className="bg-[#05060f] relative w-full pt-10 pb-20 border-t border-white/5">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 relative">
+    <section className="bg-[#05060f] relative w-full pt-10 pb-16 border-t border-white/5">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 relative">
         
         {/* Left Side: Story Triggers - Responsive margins */}
-        <div className="space-y-[60vh] lg:space-y-[110vh] pb-[30vh] lg:pb-[90vh] pt-[15vh] lg:pt-[25vh]">
+        <div className="space-y-[30vh] lg:space-y-[40vh] pb-[20vh] lg:pb-[25vh] pt-[10vh] lg:pt-[15vh]">
           {storySteps.map((s, i) => (
-            <div key={i} data-index={i} ref={el => stepsRefs.current[i] = el} className={`transition-all duration-700 ${step === i ? 'opacity-100 scale-100' : 'opacity-10 scale-95 blur-md'}`}>
+            <div key={i} data-index={i} ref={el => stepsRefs.current[i] = el} className={`transition-all duration-500 ease-out ${step === i ? 'opacity-100 scale-100 blur-0 translate-y-0' : 'opacity-20 scale-100 blur-sm translate-y-4'}`}>
               <div className="flex items-center gap-4 mb-4 lg:mb-6">
                 <span className="text-[10px] uppercase tracking-[0.4em] font-black text-indigo-400">{s.badge}</span>
                 <div className="h-px w-8 bg-indigo-500/40" />
@@ -202,8 +202,8 @@ function ScrollStory() {
                   return (
                     <div 
                       key={pIdx} 
-                      className={`flex flex-wrap items-baseline transition-all duration-700 mb-6 lg:mb-8 
-                        ${step >= 3 && pIdx !== 1 ? 'opacity-20 blur-[2px]' : 'opacity-100 blur-0'}
+                      className={`flex flex-wrap items-baseline transition-all duration-500 ease-out mb-6 lg:mb-8 
+                        ${step >= 3 && pIdx !== 1 ? 'opacity-30 blur-[1px]' : 'opacity-100 blur-0'}
                       `}
                     >
                       {para.map((word, wIdx) => {
