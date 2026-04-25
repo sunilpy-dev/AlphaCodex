@@ -101,3 +101,29 @@ npm run dev
 ---
 
 ## 📂 Project Structure
+src/
+│
+├── components/
+│ ├── workspace/
+│ ├── auth/
+│ ├── ui/
+│
+├── pages/
+│ ├── LandingPage.jsx
+│ ├── Login.jsx
+│ ├── Register.jsx
+│ ├── Workspace.jsx
+│
+├── store/
+│ └── useStore.js
+│
+└── App.jsx
+
+
+Here are some demo 
+
+https://github.com/user-attachments/assets/6323eb4d-369c-4abc-93a7-6d01e4164697
+
+
+
+
