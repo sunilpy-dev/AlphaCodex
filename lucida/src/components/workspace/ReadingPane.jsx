@@ -4,6 +4,7 @@ import { rafScheduler } from '../../utils/rafScheduler';
 
 const ReadingPane = () => {
   const containerRef = useRef(null);
+  const activeWordRef = useRef(null);
   const { tokenizedParagraphs, settings, highlight, setHighlight } = useLucidaStore();
 
   // Sync settings to CSS variables
@@ -22,13 +23,23 @@ const ReadingPane = () => {
     });
   }, [settings]);
 
+  // Auto-scroll follow
+  useEffect(() => {
+    if (activeWordRef.current && highlight.isPlaying) {
+      activeWordRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [highlight.wordIndex, highlight.paragraphIndex, highlight.isPlaying]);
+
   const handleWordClick = (paraIdx, wordIdx) => {
     setHighlight({ paragraphIndex: paraIdx, wordIndex: wordIdx, isPlaying: false });
   };
 
   return (
     <div 
-      className="h-full w-full overflow-y-auto custom-scrollbar flex flex-col items-center py-24 px-8 transition-colors duration-500"
+      className="h-full w-full overflow-y-auto custom-scrollbar flex flex-col items-center py-32 px-8 transition-colors duration-500 relative"
       style={{ backgroundColor: settings.backgroundColor }}
     >
       <div
@@ -47,42 +58,50 @@ const ReadingPane = () => {
           </div>
         ) : (
           <div className="flex flex-col">
-            {tokenizedParagraphs.map((para, pIdx) => (
-              <div 
-                key={pIdx} 
-                className="flex flex-wrap items-baseline"
-                style={{ marginBottom: 'var(--paragraph-spacing)' }}
-              >
-                {para.map((word, wIdx) => {
-                  const isSpace = /^\s+$/.test(word);
-                  const isHighlighted = pIdx === highlight.paragraphIndex && wIdx === highlight.wordIndex;
-                  
-                  if (isSpace) {
+            {tokenizedParagraphs.map((para, pIdx) => {
+              const isActivePara = pIdx === highlight.paragraphIndex;
+              const isFocusMode = settings.focusLineMode;
+              
+              return (
+                <div 
+                  key={pIdx} 
+                  className={`flex flex-wrap items-baseline transition-opacity duration-300 ${isFocusMode && !isActivePara ? 'opacity-40' : 'opacity-100'}`}
+                  style={{ marginBottom: 'var(--paragraph-spacing)' }}
+                >
+                  {para.map((word, wIdx) => {
+                    const isSpace = /^\s+$/.test(word);
+                    const isHighlighted = isActivePara && wIdx === highlight.wordIndex;
+                    
+                    if (isSpace) {
+                      return (
+                        <span 
+                          key={wIdx} 
+                          style={{ width: 'var(--word-spacing)', display: 'inline-block' }}
+                        >
+                          &nbsp;
+                        </span>
+                      );
+                    }
+
                     return (
-                      <span 
-                        key={wIdx} 
-                        style={{ width: 'var(--word-spacing)', display: 'inline-block' }}
+                      <span
+                        key={wIdx}
+                        ref={isHighlighted ? activeWordRef : null}
+                        onClick={() => handleWordClick(pIdx, wIdx)}
+                        className={`
+                          cursor-pointer transition-all duration-150 rounded-sm inline-block
+                          ${isHighlighted 
+                            ? 'bg-purple-500/20 text-white scale-[1.02] px-1 border-b-2 border-purple-500/50 z-10' 
+                            : 'text-white/80 hover:text-white'}
+                        `}
                       >
-                        &nbsp;
+                        {word}
                       </span>
                     );
-                  }
-
-                  return (
-                    <span
-                      key={wIdx}
-                      onClick={() => handleWordClick(pIdx, wIdx)}
-                      className={`
-                        cursor-pointer transition-all duration-150 rounded-sm inline-block
-                        ${isHighlighted ? 'bg-purple-500 text-white scale-110 px-1.5 shadow-[0_0_15px_rgba(168,85,247,0.6)] z-10' : 'text-white/90 hover:text-white'}
-                      `}
-                    >
-                      {word}
-                    </span>
-                  );
-                })}
-              </div>
-            ))}
+                  })}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -3,8 +3,8 @@ import { useLucidaStore } from '../../store/useLucidaStore';
 import { Play, Pause, RotateCcw, FastForward } from 'lucide-react';
 import Button from '../ui/Button';
 
-const WordHighlighter = () => {
-  const { highlight, setHighlight, nextWord, resetHighlight } = useLucidaStore();
+const WordHighlighter = ({ mini = false }) => {
+  const { highlight, startPlayback, stopPlayback, nextWord, resetHighlight } = useLucidaStore();
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -22,36 +22,47 @@ const WordHighlighter = () => {
   }, [highlight.isPlaying, highlight.speed, nextWord]);
 
   const togglePlay = () => {
-    setHighlight({ isPlaying: !highlight.isPlaying });
+    if (highlight.isPlaying) {
+      stopPlayback();
+    } else {
+      startPlayback();
+    }
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <Button 
-        variant="secondary" 
-        onClick={resetHighlight} 
-        className="!p-3" 
-        title="Reset"
-      >
-        <RotateCcw size={18} />
-      </Button>
+    <div className={`flex items-center ${mini ? 'gap-2' : 'gap-3'}`}>
+      {!mini && (
+        <Button 
+          variant="secondary" 
+          onClick={resetHighlight} 
+          className="!p-3" 
+          title="Reset"
+          aria-label="Reset Reading Progress"
+        >
+          <RotateCcw size={18} />
+        </Button>
+      )}
 
       <Button 
         variant="primary" 
         onClick={togglePlay} 
-        className="!p-4 !rounded-full"
+        className={`${mini ? '!p-2.5' : '!p-4'} !rounded-full`}
+        aria-label={highlight.isPlaying ? "Pause Auto-Reading" : "Start Auto-Reading"}
       >
-        {highlight.isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+        {highlight.isPlaying ? <Pause size={mini ? 18 : 24} /> : <Play size={mini ? 18 : 24} className={mini ? "ml-0.5" : "ml-1"} />}
       </Button>
 
-      <Button 
-        variant="secondary" 
-        onClick={nextWord} 
-        className="!p-3"
-        title="Next Word"
-      >
-        <FastForward size={18} />
-      </Button>
+      {!mini && (
+        <Button 
+          variant="secondary" 
+          onClick={nextWord} 
+          className="!p-3"
+          title="Next Word"
+          aria-label="Skip to Next Word"
+        >
+          <FastForward size={18} />
+        </Button>
+      )}
     </div>
   );
 };

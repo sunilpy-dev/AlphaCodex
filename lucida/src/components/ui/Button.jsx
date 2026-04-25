@@ -13,7 +13,8 @@ const Button = ({ children, onClick, className = '', variant = 'primary', ...pro
       whileHover={{ scale: 1.05, boxShadow: variant === 'primary' ? '0 0 30px rgba(124,58,237,0.5)' : '' }}
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${variants[variant]} ${className}`}
+      aria-label={props['aria-label']}
+      className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-purple-500 focus-visible:outline-offset-2 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}
