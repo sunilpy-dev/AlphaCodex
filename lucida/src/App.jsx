@@ -1,705 +1,490 @@
 import { useEffect, useRef, useState } from "react";
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { Routes, Route, Navigate, useNavigate, Link } from "react-router-dom";
 import Workspace from "./components/workspace/Workspace";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
 
-/* ─── Inline keyframes injected once ─── */
+/* ─── Modern Design System Styles ─── */
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   html { scroll-behavior: smooth; }
-
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     background: #05060f;
+    color: #fff;
     overflow-x: hidden;
   }
 
-  @keyframes floatY {
-    0%, 100% { transform: translateY(0px);   }
-    50%       { transform: translateY(-18px); }
+  .glass {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
-  @keyframes fadeSlideUp {
-    from { opacity: 0; transform: translateY(36px); filter: blur(8px); }
-    to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 18px 3px rgba(139,92,246,.45); }
-    50%       { box-shadow: 0 0 36px 8px rgba(139,92,246,.75); }
-  }
-  @keyframes shimmer {
-    0%   { background-position: -400px 0; }
-    100% { background-position:  400px 0; }
-  }
-  @keyframes blink {
-    0%,100% { opacity: 1; } 50% { opacity: 0; }
-  }
-
-  .anim-float   { animation: floatY 5s ease-in-out infinite; }
-  .anim-fade0   { animation: fadeSlideUp .7s ease both; }
-  .anim-fade1   { animation: fadeSlideUp .7s .18s ease both; }
-  .anim-fade2   { animation: fadeSlideUp .7s .36s ease both; }
-  .anim-fade3   { animation: fadeSlideUp .7s .54s ease both; }
-  .anim-fade4   { animation: fadeSlideUp .7s .72s ease both; }
-
-  .card-reveal  { opacity: 0; transform: translateY(40px); transition: opacity .6s ease, transform .6s ease; }
-  .card-visible { opacity: 1; transform: translateY(0); }
-
-  /* Blur-to-clear scroll reveal */
-  .blur-reveal {
-    opacity: 0;
-    filter: blur(12px);
-    transform: translateY(20px);
-    transition: opacity .65s cubic-bezier(.22,1,.36,1),
-                filter .65s cubic-bezier(.22,1,.36,1),
-                transform .65s cubic-bezier(.22,1,.36,1);
-  }
-  .blur-reveal.in-view {
-    opacity: 1;
-    filter: blur(0px);
-    transform: translateY(0);
-  }
-  .blur-reveal.out-view {
-    opacity: 0;
-    filter: blur(10px);
-    transform: translateY(16px);
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: #fff;
     border: none;
-    border-radius: 14px;
-    padding: 14px 36px;
-    font-size: 16px;
-    font-weight: 600;
     cursor: pointer;
-    transition: transform .2s, box-shadow .2s;
-    animation: pulse-glow 2.8s ease-in-out infinite;
-    letter-spacing: .3px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
   }
-  .btn-primary:hover {
-    transform: scale(1.06);
-    box-shadow: 0 0 48px 10px rgba(124,58,237,.6);
-    animation: none;
-  }
+  .btn-primary:active { transform: scale(0.96) !important; }
 
   .btn-ghost {
-    background: transparent;
-    color: rgba(255,255,255,.75);
-    border: 1px solid rgba(255,255,255,.18);
-    border-radius: 10px;
-    padding: 9px 22px;
-    font-size: 14px;
-    font-weight: 500;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    transition: background .2s, color .2s, border-color .2s;
+    transition: all 0.3s ease;
   }
   .btn-ghost:hover {
-    background: rgba(255,255,255,.08);
+    background: rgba(255, 255, 255, 0.08);
     color: #fff;
-    border-color: rgba(255,255,255,.35);
+    border-color: rgba(255, 255, 255, 0.3);
   }
 
-  /* glass panels */
-  .glass {
-    background: rgba(255,255,255,.045);
-    backdrop-filter: blur(24px) saturate(1.5);
-    -webkit-backdrop-filter: blur(24px) saturate(1.5);
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 28px;
+  /* Hardware Accelerated Demo Styles */
+  .demo-text-container {
+    letter-spacing: var(--letter-spacing, normal);
+    line-height: var(--line-height, 1.5);
+    font-family: var(--font-family, inherit);
+    transition: letter-spacing 0.8s ease-out, line-height 0.8s ease-out, font-family 0.8s ease-out;
   }
-  .glass-strong {
-    background: rgba(255,255,255,.07);
-    backdrop-filter: blur(36px) saturate(1.8);
-    -webkit-backdrop-filter: blur(36px) saturate(1.8);
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 24px;
+  
+  .stacked-card {
+    transition: all 0.5s ease-out;
   }
 
-  /* highlighted word shimmer */
-  .word-highlight {
-    background: linear-gradient(90deg, #7c3aed 30%, #a78bfa 50%, #7c3aed 70%);
-    background-size: 800px 100%;
-    animation: shimmer 2.5s linear infinite;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-  }
-
-  /* Cursor blink in demo */
-  .cursor { animation: blink 1.1s step-end infinite; }
-
-  /* Navbar */
-  .navbar {
+  .scroll-progress {
     position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    transition: background .35s, backdrop-filter .35s, padding .35s, border-color .35s;
-    border-bottom: 1px solid transparent;
-  }
-  .navbar.scrolled {
-    background: rgba(5,6,15,.75);
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
-    border-color: rgba(255,255,255,.08);
+    top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    z-index: 1000;
   }
 
-  /* Feature card */
-  .feat-card {
-    background: rgba(255,255,255,.045);
-    border: 1px solid rgba(255,255,255,.09);
-    border-radius: 28px;
-    padding: 52px 48px;
-    min-height: 260px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.35);
-    transition: transform .3s ease, border-color .3s ease, background .3s ease, box-shadow .3s ease;
-    cursor: default;
-    display: flex;
-    flex-direction: column;
-  }
-  .feat-card:hover {
-    transform: translateY(-10px);
-    border-color: rgba(124,58,237,.5);
-    background: rgba(124,58,237,.08);
-    box-shadow: 0 24px 64px rgba(0,0,0,.55), 0 0 0 1px rgba(124,58,237,.2);
-  }
-
-  /* Demo panel lines */
-  .demo-line {
-    height: 11px;
-    background: rgba(255,255,255,.1);
-    border-radius: 6px;
-    margin-bottom: 12px;
-  }
-  .demo-line.w-full  { width: 100%; }
-  .demo-line.w-5-6   { width: 83%; }
-  .demo-line.w-4-5   { width: 80%; }
-  .demo-line.w-2-3   { width: 66%; }
-  .demo-line.w-3-4   { width: 75%; }
-  .demo-line.w-half  { width: 50%; }
-
-  /* Orb blobs */
-  .orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-    pointer-events: none;
-    opacity: .38;
-  }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #05060f; }
-  ::-webkit-scrollbar-thumb { background: #3b2d6e; border-radius: 6px; }
+  ::-webkit-scrollbar-thumb { background: #2e2e42; border-radius: 10px; }
+  
+  @font-face {
+    font-family: 'OpenDyslexic';
+    src: url('https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/font/OpenDyslexic-Regular.otf');
+  }
 `;
 
-/* ─── Feature card data ─── */
 const FEATURES = [
-  {
-    icon: "🔡",
-    title: "Adaptive Typography",
-    desc: "Adjust font size, weight, line-height and letter spacing in real time — tailored to your eyes.",
-    delay: 0,
-  },
-  {
-    icon: "🌈",
-    title: "Color & Contrast",
-    desc: "Choose from curated palettes or build your own. High-contrast and dyslexia-friendly modes included.",
-    delay: 120,
-  },
-  {
-    icon: "🎵",
-    title: "Text-to-Speech",
-    desc: "Natural voice narration with adjustable speed and word-highlighting for guided reading flow.",
-    delay: 240,
-  },
+  { icon: "✨", title: "Adaptive Typography", desc: "Auto-calibrates spacing and weight based on your cognitive profile in real time." },
+  { icon: "🔍", title: "Focus Mode", desc: "Isolates the current reading zone, completely stripping away peripheral visual noise." },
+  { icon: "🧩", title: "Dyslexia Support", desc: "Native integration of heavy-bottomed OpenDyslexic fonts to anchor characters securely." },
+  { icon: "⚡", title: "Real-time Customization", desc: "Instantaneous rendering modifications without page reloads or jarring shifts." },
+  { icon: "🧭", title: "Guided Reading", desc: "Anchors your optical path with rhythmically paced highlighter progression tracking." }
 ];
 
-/* ─── Demo reading panel ─── */
-function ReadingDemo() {
-  const words = ["Reading", "should", "feel", "effortless", "and", "beautiful", "for", "everyone."];
-  const [active, setActive] = useState(3);
+/* ─── Scroll Story Component ─── */
+function ScrollStory() {
+  const [step, setStep] = useState(0);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const stepsRefs = useRef([]);
+  const demoContainerRef = useRef(null);
 
   useEffect(() => {
-    const t = setInterval(() => setActive((p) => (p + 1) % words.length), 1600);
-    return () => clearInterval(t);
+    const io = new IntersectionObserver((entries) => {
+      let visibleIndexes = [];
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          visibleIndexes.push(parseInt(e.target.dataset.index));
+        }
+      });
+      if (visibleIndexes.length > 0) {
+        setStep(Math.max(...visibleIndexes));
+      }
+    }, { rootMargin: "-20% 0px -40% 0px", threshold: 0.5 });
+    stepsRefs.current.forEach(el => el && io.observe(el));
+    return () => io.disconnect();
   }, []);
 
+  // Hardware Accelerated Variables Injection
+  useEffect(() => {
+    if (!demoContainerRef.current) return;
+    const el = demoContainerRef.current;
+    
+    let ls = '0px';
+    let lh = '1.4';
+    let ff = '"Plus Jakarta Sans", sans-serif';
+
+    if (step >= 1) { 
+      ls = '0.08em';
+      lh = '2.2';
+    }
+    if (step >= 2) { 
+      ls = '0.12em';
+      lh = '2.4';
+      ff = '"OpenDyslexic", sans-serif';
+    }
+
+    el.style.setProperty('--letter-spacing', ls);
+    el.style.setProperty('--line-height', lh);
+    el.style.setProperty('--font-family', ff);
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== 4) {
+      setCurrentWordIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCurrentWordIndex(prev => (prev + 1) % 18); 
+    }, 380); 
+    return () => clearInterval(interval);
+  }, [step]);
+
+  const storySteps = [
+    { badge: "Step 0 / 4", title: "The Reading Problem", desc: "Standard, dense digital interfaces exhaust cognitive resources rapidly. The text is cramped, and visual noise creates profound strain." },
+    { badge: "Step 1 / 4", title: "Adaptive Mechanics", desc: "We deploy real-time hardware acceleration to expand the spatial architecture. Words and lines breathe, reducing tracking effort." },
+    { badge: "Step 2 / 4", title: "Dyslexia Foundation", desc: "A seamless switch to heavy-bottomed structural typefaces anchors characters securely, combatting rotational confusion instantly." },
+    { badge: "Step 3 / 4", title: "Total Focus Override", desc: "Peripheral light is dimmed. Visual cognitive energy is tunneled explicitly into the active block you are parsing." },
+    { badge: "Step 4 / 4", title: "Pacing & Flow", desc: "Our engine tracks your rhythm, generating a temporal anchor that physically guides your eyes sequentially without friction." },
+  ];
+
+  const tokenizedDemo = [
+    ["Digital", "text", "consumption", "is", "inherently", "flawed."],
+    ["Standard,", "dense", "interfaces", "rapidly", "exhaust", "precious", "cognitive", "resources."],
+    ["Lucida", "analyzes", "spatial", "structure", "and", "perfects", "it."]
+  ];
+
+  let cumulativeWordCount = 0; 
+
   return (
-    <div className="anim-float" style={{ maxWidth: 420, width: "100%" }}>
-      <div
-        className="glass-strong"
-        style={{ padding: "32px 30px", boxShadow: "0 28px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08)" }}
-      >
-        {/* top bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-          {["#f87171","#fbbf24","#34d399"].map((c,i) => (
-            <span key={i} style={{ width: 11, height: 11, borderRadius: "50%", background: c, display: "block" }} />
-          ))}
-          <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,.3)", fontWeight: 500, letterSpacing: 1 }}>
-            LUCIDA READER
-          </span>
-        </div>
-
-        {/* settings strip */}
-        <div
-          style={{
-            display: "flex", gap: 8, marginBottom: 24, padding: "10px 14px",
-            background: "rgba(255,255,255,.04)", borderRadius: 12,
-            border: "1px solid rgba(255,255,255,.07)",
-          }}
-        >
-          {["Aa", "1.6×", "Sans", "☀"].map((l,i) => (
-            <span
-              key={i}
-              style={{
-                fontSize: 11, padding: "4px 10px", borderRadius: 7,
-                background: i === 0 ? "rgba(124,58,237,.35)" : "rgba(255,255,255,.05)",
-                border: `1px solid ${i === 0 ? "rgba(124,58,237,.6)" : "rgba(255,255,255,.07)"}`,
-                color: i === 0 ? "#c4b5fd" : "rgba(255,255,255,.45)",
-                cursor: "pointer", fontWeight: 600, userSelect: "none",
-              }}
-            >
-              {l}
-            </span>
+    <section className="bg-[#05060f] relative w-full pt-10 pb-20 border-t border-white/5">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 relative">
+        
+        {/* Left Side: Story Triggers - Responsive margins */}
+        <div className="space-y-[60vh] lg:space-y-[110vh] pb-[30vh] lg:pb-[90vh] pt-[15vh] lg:pt-[25vh]">
+          {storySteps.map((s, i) => (
+            <div key={i} data-index={i} ref={el => stepsRefs.current[i] = el} className={`transition-all duration-700 ${step === i ? 'opacity-100 scale-100' : 'opacity-10 scale-95 blur-md'}`}>
+              <div className="flex items-center gap-4 mb-4 lg:mb-6">
+                <span className="text-[10px] uppercase tracking-[0.4em] font-black text-indigo-400">{s.badge}</span>
+                <div className="h-px w-8 bg-indigo-500/40" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter mb-4 lg:mb-6 leading-[1.05]">{s.title}</h2>
+              <p className="text-lg sm:text-xl text-white/40 leading-relaxed font-medium">{s.desc}</p>
+            </div>
           ))}
         </div>
 
-        {/* reading text */}
-        <p
-          style={{
-            fontSize: 17, lineHeight: 1.85, color: "rgba(255,255,255,.7)",
-            fontWeight: 400, letterSpacing: ".2px", marginBottom: 20,
-          }}
-        >
-          {words.map((w, i) => (
-            <span key={i}>
-              {i === active ? (
-                <span
-                  className="word-highlight"
-                  style={{
-                    padding: "1px 6px", borderRadius: 6,
-                    background: "rgba(124,58,237,.18)",
-                  }}
-                >
-                  {w}
-                </span>
-              ) : (
-                <span style={{ color: i < active ? "rgba(255,255,255,.9)" : "rgba(255,255,255,.4)" }}>
-                  {w}
-                </span>
-              )}{" "}
-            </span>
-          ))}
-          <span className="cursor" style={{ color: "#a78bfa", fontWeight: 700 }}>|</span>
-        </p>
+        {/* Right Side: Simulated Workspace DOM - Static on mobile, Sticky on desktop */}
+        <div className="fixed bottom-0 left-0 w-full lg:w-auto lg:relative block lg:sticky lg:top-[20vh] h-[40vh] lg:h-[60vh] z-10 transition-transform duration-1000 ease-out lg:py-6 p-4 lg:p-0 pointer-events-none lg:pointer-events-auto opacity-100">
+          <div className="w-full h-full glass-panel rounded-t-[30px] lg:rounded-[40px] flex shadow-[0_-20px_40px_rgba(0,0,0,0.8)] lg:shadow-[0_60px_100px_rgba(0,0,0,0.8)] overflow-hidden border-b-0 lg:border-b">
+            
+            <div className="w-full h-full bg-[#080914] flex flex-col relative p-6 sm:p-8 lg:p-12 overflow-hidden overflow-y-auto">
+              <div className="flex justify-between items-center pb-4 lg:pb-6 mb-4 lg:mb-8 border-b border-white/10 relative z-20">
+                <div className="flex gap-2">
+                  <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-red-500/20" />
+                  <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-yellow-500/20" />
+                  <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full bg-green-500/20" />
+                </div>
+                <div className="px-3 py-1 lg:px-4 lg:py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-md">
+                   <span className="text-[8px] lg:text-[9px] font-black text-indigo-400 uppercase tracking-widest">Workspace Demo Rendering</span>
+                </div>
+              </div>
 
-        {/* mock lines */}
-        <div>
-          {[100, 83, 75, 66, 80, 50].map((w, i) => (
-            <div key={i} className="demo-line" style={{ width: `${w}%`, opacity: .4 - i * .04 }} />
-          ))}
+              <div ref={demoContainerRef} className="flex-1 demo-text-container text-lg sm:text-xl lg:text-2xl relative z-10">
+                {tokenizedDemo.map((para, pIdx) => {
+                  return (
+                    <div 
+                      key={pIdx} 
+                      className={`flex flex-wrap items-baseline transition-all duration-700 mb-6 lg:mb-8 
+                        ${step >= 3 && pIdx !== 1 ? 'opacity-20 blur-[2px]' : 'opacity-100 blur-0'}
+                      `}
+                    >
+                      {para.map((word, wIdx) => {
+                        const globalIdx = cumulativeWordCount++;
+                        const isHighlighted = step === 4 && globalIdx === currentWordIndex;
+                        
+                        return (
+                          <div key={wIdx} className="relative inline-block mr-[var(--word-spacing, 0.3em)] mb-1.5 lg:mb-2">
+                            <span 
+                              className={`transition-all duration-150 inline-block px-1 rounded-md
+                                ${isHighlighted 
+                                  ? 'bg-purple-500/20 text-white scale-[1.05] border-b-2 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] z-10' 
+                                  : 'text-white/80'}
+                              `}
+                            >
+                              {word}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[120%] h-[50%] bg-[#05060f]/90 blur-[30px] pointer-events-none z-0" />
+            </div>
+          </div>
         </div>
 
-        {/* progress bar */}
-        <div
-          style={{
-            marginTop: 22, height: 4, background: "rgba(255,255,255,.07)",
-            borderRadius: 99, overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: "38%", height: "100%",
-              background: "linear-gradient(90deg,#7c3aed,#a78bfa)",
-              borderRadius: 99,
-            }}
-          />
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, color: "rgba(255,255,255,.28)", fontWeight: 500 }}>
-          <span>Page 3 of 8</span>
-          <span>38%</span>
-        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-/* ─── Landing Page Content ─── */
+/* ─── Stacked Feature Cards Component ─── */
+function StackedFeatures() {
+  return (
+    <section className="py-24 sm:py-32 w-full bg-[#05060f] relative border-t border-white/5">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full text-center relative z-20 mb-16 sm:mb-32">
+          <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mb-4 block">Core Mechanics</span>
+          <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white tracking-tighter italic">Engineered for clarity.</h2>
+      </div>
+
+      <div className="max-w-[800px] mx-auto px-4 sm:px-6 w-full relative space-y-[4vh] sm:space-y-[2vh] pb-[20vh] sm:pb-[40vh]">
+        {FEATURES.map((feat, idx) => (
+          <div 
+            key={idx} 
+            className="sticky w-full"
+            style={{ top: `calc(10vh + ${idx * 20}px)`, zIndex: idx }}
+          >
+            <div className="w-full glass-panel stacked-card p-6 sm:p-10 lg:p-12 rounded-[24px] sm:rounded-[32px] lg:rounded-[40px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex flex-col sm:flex-row items-start gap-4 sm:gap-8 bg-[#0a0b14]/95 border-white/10 hover:border-indigo-500/30 hover:bg-[#0a0b14]">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_20px_rgba(99,102,241,0.15)]">
+                {feat.icon}
+              </div>
+              <div className="pt-1 sm:pt-2">
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 sm:mb-4 uppercase tracking-tighter">{feat.title}</h3>
+                <p className="text-sm sm:text-base lg:text-lg text-white/50 leading-relaxed font-medium">{feat.desc}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Main Landing Page Content ─── */
 function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
-  const cardsRef = useRef([]);
-  const blurRefs = useRef([]);
+  const [scrollPct, setScrollPct] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      const top = window.scrollY;
+      setScrollY(top);
+      setScrolled(top > 40);
+      const doc = document.documentElement;
+      const pct = (top / (doc.scrollHeight - doc.clientHeight)) * 100;
+      setScrollPct(Math.min(pct, 100));
+    };
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Card slide-up reveal
   useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) e.target.classList.add("card-visible");
-        }),
-      { threshold: 0.15 }
-    );
-    cardsRef.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-  // Blur-to-clear text reveal (bidirectional)
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("in-view");
-            e.target.classList.remove("out-view");
-          } else {
-            e.target.classList.remove("in-view");
-            e.target.classList.add("out-view");
-          }
-        }),
-      { threshold: 0.2 }
-    );
-    blurRefs.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, []);
+    const handleMove = (e) => {
+      if (window.innerWidth < 1024) return; // Disable tilt on mobile
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      if(el.classList.contains("hero-tilt")) {
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        el.style.transform = `perspective(1000px) rotateY(${x / 30}deg) rotateX(${-y / 30}deg) translateY(${scrollY * -0.05}px)`;
+      } else if(el.classList.contains("magnetic")) {
+        const dx = (e.clientX - rect.left - rect.width / 2) * 0.2;
+        const dy = (e.clientY - rect.top - rect.height / 2) * 0.2;
+        el.style.transform = `translate(${dx}px, ${dy}px) scale(1.05)`;
+      }
+    };
+    const handleLeave = (e) => {
+      e.currentTarget.style.transform = "";
+    };
+    const elements = document.querySelectorAll(".hero-tilt, .magnetic");
+    elements.forEach((el) => {
+      el.addEventListener("mousemove", handleMove);
+      el.addEventListener("mouseleave", handleLeave);
+    });
+    return () => elements.forEach((el) => {
+      el.removeEventListener("mousemove", handleMove);
+      el.removeEventListener("mouseleave", handleLeave);
+    });
+  }, [scrollY]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-[#05060f] min-h-screen font-['Plus_Jakarta_Sans',sans-serif]">
       <style>{STYLES}</style>
+      <div className="scroll-progress" style={{ width: `${scrollPct}%` }} />
 
       {/* ── NAVBAR ── */}
-      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        <div
-          style={{
-            maxWidth: 1200, margin: "0 auto",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: scrolled ? "14px 32px" : "22px 32px",
-            transition: "padding .35s",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span
-              style={{
-                width: 34, height: 34,
-                background: "linear-gradient(135deg,#7c3aed,#4f46e5)",
-                borderRadius: 10, display: "grid", placeItems: "center",
-                fontSize: 16, boxShadow: "0 0 16px rgba(124,58,237,.55)",
-              }}
-            >✦</span>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-.4px" }}>
-              Lucida
-            </span>
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${scrolled ? 'py-3 sm:py-4 bg-[#05060f]/90 backdrop-blur-2xl border-b border-white/5' : 'py-6 sm:py-8'}`}>
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 decoration-transparent">
+            <span className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-black text-white text-xs sm:text-sm shadow-[0_0_20px_rgba(79,70,229,0.5)]">✦</span>
+            <span className="text-lg sm:text-xl font-black tracking-tighter uppercase text-white">Lucida</span>
+          </Link>
+          
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-8">
+             <Link to="/login" className="text-[20px] font-black text-white/40 hover:text-white uppercase tracking-[0.3em] transition-colors decoration-transparent">Login</Link>
+             <button onClick={() => navigate('/register')} className="btn-primary magnetic px-6 py-2.5 rounded-xl text-md font-black tracking-wide">Get Started</button>
           </div>
 
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button className="btn-ghost">Features</button>
-            <button className="btn-ghost">Pricing</button>
-            <Link
-              to="/login"
-              className="btn-primary"
-              style={{ padding: "9px 22px", fontSize: 14, animation: "none",
-                       boxShadow: "0 0 18px rgba(124,58,237,.4)", textDecoration: "none" }}
-            >
-              Get Started
-            </Link>
-          </div>
+          {/* Mobile Nav Toggle */}
+          <button className="lg:hidden p-2" onClick={() => setMenuOpen(!menuOpen)}>
+             <div className="space-y-1.5">
+               <span className={`block w-6 h-0.5 bg-white transition-all ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+               <span className={`block w-6 h-0.5 bg-white transition-all ${menuOpen ? 'opacity-0' : ''}`} />
+               <span className={`block w-6 h-0.5 bg-white transition-all ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+             </div>
+          </button>
         </div>
+
+        {/* Mobile Nav Dropdown */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="lg:hidden bg-[#05060f]/95 backdrop-blur-2xl border-b border-white/5 overflow-hidden"
+            >
+              <div className="flex flex-col gap-6 px-6 py-8">
+                 <Link to="/login" className="text-sm font-black text-white uppercase tracking-widest decoration-transparent" onClick={() => setMenuOpen(false)}>Login</Link>
+                 <Link to="/register" className="text-sm font-black text-indigo-400 uppercase tracking-widest decoration-transparent" onClick={() => setMenuOpen(false)}>Get Started</Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* ── HERO ── */}
-      <section
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          position: "relative",
-          overflow: "hidden",
-          padding: "0 24px",
-        }}
-      >
-        {/* background gradient + orbs */}
-        <div
-          style={{
-            position: "absolute", inset: 0,
-            background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,46,137,.28) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 60%, rgba(67,56,202,.2) 0%, transparent 60%), #05060f",
-          }}
-        />
-        <div className="orb" style={{ width: 520, height: 520, left: "-120px", top: "-80px",  background: "#4c1d95" }} />
-        <div className="orb" style={{ width: 380, height: 380, right: "-60px", bottom: "-60px", background: "#1e1b4b" }} />
-        <div className="orb" style={{ width: 260, height: 260, right: "25%",   top: "10%",     background: "#5b21b6", opacity: .22 }} />
-
-        {/* dual pane container */}
-        <div
-          style={{
-            maxWidth: 1200, width: "100%", margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 32,
-            padding: "120px 0 80px",
-            position: "relative", zIndex: 1,
-          }}
-          className="hero-grid"
-        >
-          {/* LEFT PANE */}
-          <div
-            className="glass"
-            style={{
-              padding: "56px 52px",
-              display: "flex", flexDirection: "column",
-              justifyContent: "center", gap: 0,
-              boxShadow: "0 24px 72px rgba(0,0,0,.45)",
-            }}
-          >
-            <div className="anim-fade0" style={{ marginBottom: 16 }}>
-              <span
-                style={{
-                  display: "inline-block",
-                  fontSize: 12, fontWeight: 600, letterSpacing: 2,
-                  color: "#a78bfa", textTransform: "uppercase",
-                  background: "rgba(124,58,237,.12)",
-                  border: "1px solid rgba(124,58,237,.3)",
-                  padding: "5px 14px", borderRadius: 99,
-                }}
-              >
-                Accessibility · Reading · Focus
-              </span>
-            </div>
-
-            <h1
-              className="anim-fade1"
-              style={{
-                fontSize: "clamp(36px, 4.5vw, 58px)",
-                fontWeight: 800,
-                lineHeight: 1.12,
-                letterSpacing: "-1.5px",
-                color: "#fff",
-                marginBottom: 20,
-              }}
-            >
-              Read without
-              <br />
-              <span
-                style={{
-                  background: "linear-gradient(135deg,#a78bfa 0%,#6366f1 60%,#818cf8 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                boundaries.
-              </span>
+      <section className="min-h-[100svh] flex items-center pt-24 sm:pt-32 pb-20 sm:pb-40 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,rgba(79,70,229,0.1),transparent_70%)] pointer-events-none" />
+        
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 relative z-10 h-full">
+          {/* Text Pane - Col 1 to 6 */}
+          <div className="col-span-1 lg:col-span-6 flex flex-col justify-center text-center lg:text-left pt-10 sm:pt-0">
+            <h1 className="text-5xl sm:text-7xl lg:text-[100px] font-black text-white leading-[0.9] lg:leading-[0.85] tracking-tighter mb-6 sm:mb-10">
+              Reading, <br className="hidden sm:block"/>
+              <span className="bg-gradient-to-r from-white via-indigo-200 to-indigo-500 bg-clip-text text-transparent">optimized <br className="hidden lg:block"/> for you.</span>
             </h1>
-
-            <p
-              className="anim-fade2"
-              style={{
-                fontSize: 17, lineHeight: 1.75,
-                color: "rgba(255,255,255,.55)",
-                maxWidth: 420, marginBottom: 40,
-                fontWeight: 400,
-              }}
-            >
-              Lucida adapts every word to your needs — custom typography, guided
-              highlighting, and voice narration in one elegant tool.
+            <p className="text-base sm:text-xl lg:text-2xl text-white/50 leading-relaxed font-medium mb-10 sm:mb-16 max-w-lg mx-auto lg:mx-0">
+              Lucida is an intelligent reading system that actively restructures content to align with your cognitive capacity.
             </p>
-
-            <div className="anim-fade3" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <Link 
-                to="/register"
-                className="btn-primary" 
-                style={{ fontSize: 15, padding: "15px 38px", textDecoration: "none" }}
-              >
-                Start Reading — Free
-              </Link>
-              <button className="btn-ghost" style={{ padding: "15px 28px", fontSize: 15 }}>
-                Watch Demo ▶
-              </button>
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 sm:gap-5 w-full sm:w-auto">
+              <button onClick={() => navigate('/register')} className="btn-primary magnetic rounded-[16px] sm:rounded-[20px] px-8 sm:px-12 py-4 sm:py-5 text-sm sm:text-base font-black">Get Started</button>
+              <button onClick={() => navigate('/login')} className="btn-ghost magnetic rounded-[16px] sm:rounded-[20px] px-8 sm:px-10 py-4 sm:py-5 text-sm sm:text-base font-black">Login to Workspace</button>
             </div>
+          </div>
 
-            <div
-              className="anim-fade4"
-              style={{
-                display: "flex", gap: 20, alignItems: "center",
-                marginTop: 36, paddingTop: 32,
-                borderTop: "1px solid rgba(255,255,255,.07)",
-              }}
-            >
-              {[["10k+","Readers"], ["98%","Satisfaction"], ["4.9★","Rating"]].map(([n,l],i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: "#c4b5fd" }}>{n}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", fontWeight: 500 }}>{l}</div>
+          {/* Visual Pane - Col 7 to 12 */}
+          <div className="col-span-1 lg:col-span-6 relative flex items-center justify-center mt-8 lg:mt-0 px-2 sm:px-0">
+            <div className="w-full max-w-[500px] glass-panel hero-tilt p-2 rounded-[32px] sm:rounded-[56px] shadow-[0_20px_60px_rgba(0,0,0,0.8)] sm:shadow-[0_50px_150px_rgba(0,0,0,1)] transition-transform duration-200 ease-out">
+              <div className="bg-[#0a0b16] rounded-[28px] sm:rounded-[50px] p-6 sm:p-10 lg:p-14 h-full relative overflow-hidden flex flex-col justify-between aspect-[4/3]">
+                <div className="flex justify-between items-center mb-6 sm:mb-8 relative z-10">
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500/20" />
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-500/20" />
+                  </div>
+                  <div className="flex gap-1.5 sm:gap-2 items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.6)]" />
+                    <span className="text-[8px] sm:text-[10px] font-bold text-emerald-400/80 uppercase tracking-widest">Active System</span>
+                  </div>
                 </div>
-              ))}
+                
+                <div className="space-y-4 sm:space-y-6 relative z-10 my-2 sm:my-4">
+                  <div className="w-full h-6 sm:h-8 rounded-lg sm:rounded-xl bg-white/5" />
+                  <div className="w-5/6 h-6 sm:h-8 rounded-lg sm:rounded-xl bg-white/10" />
+                  <div className="w-full h-6 sm:h-8 rounded-lg sm:rounded-xl bg-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.2)]" />
+                  <div className="w-4/5 h-6 sm:h-8 rounded-lg sm:rounded-xl bg-white/5" />
+                </div>
+                
+                <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-white/5 flex justify-between relative z-10">
+                  <div>
+                    <div className="text-[8px] sm:text-[10px] font-black text-white/30 tracking-widest uppercase mb-0.5 sm:mb-1">Rhythm</div>
+                    <div className="text-xl sm:text-2xl font-black text-white">Adaptive</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[8px] sm:text-[10px] font-black text-indigo-400/50 tracking-widest uppercase mb-0.5 sm:mb-1">Fatigue</div>
+                    <div className="text-xl sm:text-2xl font-black text-indigo-400">-40%</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* RIGHT PANE */}
-          <div
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "40px 24px",
-            }}
-          >
-            <ReadingDemo />
-          </div>
+          
         </div>
-
-        {/* responsive styles via a style tag */}
-        <style>{`
-          @media (max-width: 768px) {
-            .hero-grid {
-              grid-template-columns: 1fr !important;
-              padding: 100px 0 60px !important;
-            }
-          }
-        `}</style>
       </section>
 
-      {/* ── FEATURES ── */}
-      <section
-        style={{
-          padding: "120px 32px",
-          position: "relative",
-          background: "linear-gradient(180deg, #05060f 0%, #080b1a 100%)",
-        }}
-      >
-        {/* Section label */}
-        <div style={{ textAlign: "center", marginBottom: 72 }}>
-          <span
-            ref={(el) => (blurRefs.current[0] = el)}
-            className="blur-reveal"
-            style={{
-              fontSize: 12, fontWeight: 600, letterSpacing: 2,
-              color: "#a78bfa", textTransform: "uppercase",
-              background: "rgba(124,58,237,.12)",
-              border: "1px solid rgba(124,58,237,.3)",
-              padding: "5px 14px", borderRadius: 99,
-              display: "inline-block", marginBottom: 24,
-              transitionDelay: "0ms",
-            }}
-          >
-            Features
-          </span>
-          <h2
-            ref={(el) => (blurRefs.current[1] = el)}
-            className="blur-reveal"
-            style={{
-              fontSize: "clamp(32px, 3.5vw, 48px)",
-              fontWeight: 800, color: "#fff",
-              letterSpacing: "-1.2px", lineHeight: 1.15,
-              transitionDelay: "80ms",
-            }}
-          >
-            Built for every reader.
+      {/* ── SCROLL INTERACTIVE DEMO ── */}
+      <ScrollStory />
+
+      {/* ── STACKED FEATURE CARDS ── */}
+      <StackedFeatures />
+
+      {/* ── CTA ── */}
+      <section className="py-32 sm:py-48 border-t border-white/5 relative overflow-hidden bg-[#05060f]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full text-center relative z-10">
+          <h2 className="text-5xl sm:text-8xl lg:text-[110px] font-black text-white leading-[0.9] sm:leading-[0.8] tracking-tighter mb-10 sm:mb-16">
+            Ready to read <br/> clearly?
           </h2>
-          <p
-            ref={(el) => (blurRefs.current[2] = el)}
-            className="blur-reveal"
-            style={{ color: "rgba(255,255,255,.45)", marginTop: 16, fontSize: 17, maxWidth: 500, margin: "16px auto 0", lineHeight: 1.7, transitionDelay: "160ms" }}
-          >
-            Powerful accessibility tools wrapped in a calm, distraction-free experience.
-          </p>
+          <button onClick={() => navigate('/register')} className="btn-primary magnetic px-8 sm:px-[60px] py-4 sm:py-[22px] text-base sm:text-lg font-black rounded-[20px] sm:rounded-3xl w-full sm:w-auto">Create Account</button>
         </div>
-
-        <div
-          style={{
-            maxWidth: 960, margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: 32,
-          }}
-        >
-          {FEATURES.map((f, i) => (
-            <div
-              key={i}
-              ref={(el) => (cardsRef.current[i] = el)}
-              className="feat-card card-reveal"
-              style={{ transitionDelay: `${f.delay}ms`, gridColumn: i === 2 ? "1 / -1" : undefined }}
-            >
-              <div
-                style={{
-                  width: 64, height: 64, borderRadius: 18,
-                  background: "linear-gradient(135deg,rgba(124,58,237,.3),rgba(79,70,229,.18))",
-                  border: "1px solid rgba(124,58,237,.35)",
-                  display: "grid", placeItems: "center",
-                  fontSize: 28, marginBottom: 28,
-                  boxShadow: "0 0 28px rgba(124,58,237,.25)",
-                }}
-              >
-                {f.icon}
-              </div>
-              <h3
-                style={{
-                  fontSize: 22, fontWeight: 700, color: "#fff",
-                  marginBottom: 14, letterSpacing: "-.4px",
-                }}
-              >
-                {f.title}
-              </h3>
-              <p style={{ fontSize: 15.5, lineHeight: 1.75, color: "rgba(255,255,255,.5)", fontWeight: 400 }}>
-                {f.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <style>{`
-          @media (max-width: 640px) {
-            .feat-grid { grid-template-columns: 1fr !important; }
-          }
-        `}</style>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-indigo-600/10 blur-[100px] sm:blur-[200px] rounded-full pointer-events-none" />
       </section>
 
       {/* ── FOOTER ── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255,255,255,.06)",
-          padding: "32px 24px",
-          textAlign: "center",
-          color: "rgba(255,255,255,.25)",
-          fontSize: 13,
-          background: "#05060f",
-        }}
-      >
-        © 2025 Lucida · Built for every reader{" "}
-        <span style={{ color: "#6d28d9" }}>✦</span>
+      <footer className="py-16 sm:py-24 border-t border-white/5">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full flex flex-col md:flex-row justify-between items-center text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
+          <div className="flex items-center gap-3 mb-6 md:mb-0">
+            <span className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-lg hover:rotate-12 transition-transform cursor-pointer">✦</span>
+            <span>© 2025 Lucida. All rights reserved.</span>
+          </div>
+          <div className="flex gap-8">
+            <span className="cursor-pointer hover:text-white transition">Privacy</span>
+            <span className="cursor-pointer hover:text-white transition">Legal</span>
+          </div>
+        </div>
       </footer>
     </motion.div>
   );
 }
 
-/* ─── Main App ─── */
+/* ─── Protected Route Component ─── */
+const ProtectedRoute = ({ children }) => {
+  const isActive = localStorage.getItem('lucida_active_session');
+  if (!isActive) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+/* ─── Main App Router ─── */
 export default function App() {
   return (
-    <BrowserRouter>
-      <AnimatePresence mode="wait">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Workspace />} />
-        </Routes>
-      </AnimatePresence>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route 
+        path="/workspace" 
+        element={
+          <ProtectedRoute>
+            <Workspace />
+          </ProtectedRoute>
+        } 
+      />
+    </Routes>
   );
 }
