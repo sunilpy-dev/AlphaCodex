@@ -41,28 +41,7 @@ Reading on digital screens is often tiring due to poor layout, spacing, and lack
 - **State Management:** Zustand
 - **Animations:** Framer Motion
 - **Storage:** localStorage (no backend)
-
-## Folder Structure 
----
-src/
-│
-├── components/
-│ ├── workspace/
-│ ├── auth/
-│ ├── ui/
-│
-├── pages/
-│ ├── LandingPage.jsx
-│ ├── Login.jsx
-│ ├── Register.jsx
-│ ├── Workspace.jsx
-│
-├── store/
-│ └── useStore.js
-│
-└── App.jsx
----
-
+  
 ---
 
 ## 🔐 Authentication
